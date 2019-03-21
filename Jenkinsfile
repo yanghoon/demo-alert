@@ -10,11 +10,12 @@ podTemplate(label:label,
     serviceAccount: "zcp-system-sa-${ZCP_USERID}",
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3.5.2-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat',
+            envVars: [envVar(key: 'DOCKER_HOST', value: 'tcp://jenkins-dind-service:2375 ')] ),
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat')
     ],
     volumes: [
-        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+        // hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
         persistentVolumeClaim(mountPath: '/root/.m2', claimName: 'zcp-jenkins-mvn-repo')
     ]) {
 
