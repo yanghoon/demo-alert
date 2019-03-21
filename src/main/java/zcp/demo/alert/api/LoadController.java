@@ -29,6 +29,17 @@ public class LoadController {
         return response + " (" + loop + ")";
     }
 
+    @GetMapping("/load/mem2")
+    public void memory() {
+        while(true){
+            try {
+                cache.add(read());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @GetMapping("/load/cpu")
     public String cpu() {
         return response + "!!!";
