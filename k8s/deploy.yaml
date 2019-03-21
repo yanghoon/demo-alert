@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: zcp-demo
-        image: pog-dev-registry.cloudzcp.io/zcp-demo/zcp-demo:latest
+        image: pog-dev-registry.cloudzcp.io/zcp-demo/alert:latest
         imagePullPolicy: Always
         ports:
         - name: spring
