@@ -32,7 +32,7 @@ podTemplate(label:label,
 
         stage('BUILD DOCKER IMAGE') {
             container('docker') {
-                dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}"
+                dockerCmd.build tag: "${HARBOR_REGISTRY}/${DOCKER_IMAGE}:${VERSION}", path: 'docker'
                 dockerCmd.push registry: HARBOR_REGISTRY, imageName: DOCKER_IMAGE, imageVersion: VERSION, credentialsId: "HARBOR_CREDENTIALS"
             }
         }
