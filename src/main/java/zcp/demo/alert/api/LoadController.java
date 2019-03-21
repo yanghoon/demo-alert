@@ -22,7 +22,7 @@ public class LoadController {
     private String MSG_INVALID = "Invalid Parameter (eg. 1g or 100m--)";
     private String MSG_TOO_SMALL;
 
-    private final Resource DATA = new ClassPathResource("static/mock.csv");
+    private Resource DATA;
     private long DATA_SIZE;
     private double DATA_SIZE_MIB;
 
@@ -33,6 +33,7 @@ public class LoadController {
 
     @PostConstruct
     public void init() throws IOException {
+        DATA = new ClassPathResource("static/mock.csv");
         DATA_SIZE = DATA.getFile().length();
         DATA_SIZE_MIB = toBiFloat(DATA_SIZE);
 
@@ -91,6 +92,7 @@ public class LoadController {
 
     @GetMapping("/load/mem/status")
     public String status(){
+        // https://javaslave.tistory.com/23
         long hold = cache.stream().mapToLong(a->a.length).sum();
         long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long commited = Runtime.getRuntime().totalMemory();
@@ -99,6 +101,7 @@ public class LoadController {
 
     private String toBi(long bytes) {
         // https://stackoverflow.com/a/3758880
+        // https://github.com/JakeWharton/byteunits
         boolean si = false;
         int unit = si ? 1000 : 1024;
         if (bytes < unit)
@@ -109,7 +112,6 @@ public class LoadController {
     }
 
     private double toBiFloat(long bytes) {
-        // https://stackoverflow.com/a/3758880
         boolean si = false;
         int unit = si ? 1000 : 1024;
         if (bytes < unit)
