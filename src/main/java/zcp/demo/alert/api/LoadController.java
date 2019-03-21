@@ -4,9 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,33 +18,29 @@ public class LoadController {
     private static String response = "Start";
 
     private ArrayList<byte[]> cache = new ArrayList<>();
+    private AtomicBoolean flag = new AtomicBoolean();
 
     @GetMapping("/load/mem")
-    public String memory(@RequestParam(name = "l", defaultValue = "1") int loop) {
-        for(int i=0; i < loop; i++){
-            try {
-                cache.add(read());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return response + " (" + loop + ")";
-    }
-
-    @GetMapping("/load/mem2")
-    public void memory() {
-        while(true){
-            try {
-                cache.add(read());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public String memory() {
+        flag.set(true);
+        return response;
     }
 
     @GetMapping("/load/cpu")
     public String cpu() {
         return response + "!!!";
+    }
+
+    @Scheduled(fixedRate = 3000)
+    private void memoryLoad(){
+        boolean flag = this.flag.get();
+        while(flag){
+            try {
+                cache.add(read());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private byte[] read() throws IOException {
