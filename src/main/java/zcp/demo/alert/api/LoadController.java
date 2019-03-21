@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,35 +19,55 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class LoadController {
-    private static String response = "Start";
+    private String MSG_INVALID = "Invalid Parameter (eg. 1g or 100m--)";
+    private String MSG_TOO_SMALL;
+
+    private final Resource DATA = new ClassPathResource("static/mock.csv");
+    private long DATA_SIZE;
+    private double DATA_SIZE_MIB;
 
     private ArrayList<byte[]> cache = new ArrayList<>();
 
-    private Pattern regx = Pattern.compile("(\\d+)(g|m)(i)?(-)?");
+    private Pattern regx = Pattern.compile("(\\d+)(g|m)(i)?(--)?");
     private AtomicInteger delta = new AtomicInteger();
 
-    @GetMapping("/load/mem/{size}")
-    public String memory(@PathVariable String size) {
-        Matcher m = regx.matcher(size);
-        if(!m.find()) return "Invalid Parameter";
+    @PostConstruct
+    public void init() throws IOException {
+        DATA_SIZE = DATA.getFile().length();
+        DATA_SIZE_MIB = toBiFloat(DATA_SIZE);
 
-        long amount = Long.parseLong(m.group(1));
+        MSG_TOO_SMALL = String.format("Too small. (min: %s)", toBi(DATA_SIZE));
+    }
+
+    @GetMapping("/load/mem/{size}")
+    public String memory(@PathVariable String size) throws IOException {
+        Matcher m = regx.matcher(size);
+        if(!m.find()) return MSG_INVALID;
+
+        int amount = Integer.valueOf(m.group(1));
         String unit = m.group(2);
         boolean sig = "i".equals(m.group(3));
-        boolean minus = "-".equals(m.group(4));
+        boolean minus = "--".equals(m.group(4));
 
         if(minus) amount *= -1;
         if("g".equals(unit)) amount *= 1000;
-        if(sig) amount = amount / 1024 * 1000;
+        // if(sig) amount = amount / 1024 * 1000;
 
-        delta.addAndGet((int) amount/10);
+        if(Math.abs(amount) < DATA_SIZE_MIB) return MSG_TOO_SMALL;
 
-        return response + " " + (minus ? "" : "+") + amount + unit.toUpperCase() + (sig ? "i" : "");
+        amount = (int) (amount / DATA_SIZE_MIB);
+        delta.addAndGet(amount);
+
+        memoryLoad();
+        String ret = String.format("Scale %s %s.", (minus ? "down" : "up"), toBi(DATA_SIZE * Math.abs(amount)) );
+        return ret + "\n" + status();
     }
 
-    @GetMapping("/load/cpu")
-    public String cpu() {
-        return response + "!!!";
+    @GetMapping("/load/mem/clear")
+    public String clear() {
+        cache.clear();
+        System.gc();
+        return status();
     }
 
     @Scheduled(fixedRate = 3000)
@@ -64,28 +86,49 @@ public class LoadController {
         }
 
         if(direction == -1) System.gc();
+        System.out.println(status());
+    }
 
-        long heap = Runtime.getRuntime().totalMemory();
-        System.out.format("Memory Status : %s mb (heap: %d mb)\n", cache.size() * 10, heap/1024/1024);
+    @GetMapping("/load/mem/status")
+    public String status(){
+        long hold = cache.stream().mapToLong(a->a.length).sum();
+        long used = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        long commited = Runtime.getRuntime().totalMemory();
+        return String.format("Memory Status : %s (used: %s, commited: %s)", toBi(hold), toBi(used), toBi(commited));
+    }
+
+    private String toBi(long bytes) {
+        // https://stackoverflow.com/a/3758880
+        boolean si = false;
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit)
+            return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    private double toBiFloat(long bytes) {
+        // https://stackoverflow.com/a/3758880
+        boolean si = false;
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit)
+            return bytes * 1.0d;
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        return bytes / Math.pow(unit, exp);
     }
 
     private byte[] read() throws IOException {
-        Resource data = new ClassPathResource("static/mock.csv");
-
-        // byte[] buf = Files.readAllBytes(data.getFile().toPath());
-
-        InputStream is = data.getInputStream();
+        InputStream is = DATA.getInputStream();
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         int len;
         byte[] buf = new byte[100 * 1024];
+        // byte[] ret = new byte[(int) DATA_SIZE];
         while ((len = is.read(buf, 0, buf.length)) != -1) {
             buffer.write(buf, 0, len);
         }
 
-        buf = buffer.toByteArray();
-        // System.out.format("Read %s bytes.\n", buf.length);
-
-        return buf;
+        return buffer.toByteArray();
     }
 }
