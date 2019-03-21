@@ -4,5 +4,8 @@
 # - https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 
 management.endpoints.web.exposure.include: '*'
+#management.metrics.distribution:
+#  sla[http.server.requests]: 100ms, 200ms, 400ms
+#  percentiles-histogram[http.server.requests]: true
 
 #logging.level.org.springframework: DEBUG

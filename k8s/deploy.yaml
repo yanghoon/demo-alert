@@ -8,6 +8,7 @@ spec:
   template:
     metadata:
       labels:
+        app: zcp-demo
         component: zcp-demo
         module: alert
       annotations: # https://www.weave.works/docs/cloud/latest/tasks/monitor/configuration-k8s/
@@ -22,6 +23,13 @@ spec:
         ports:
         - name: spring
           containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "200m"
+          limits:
+            memory: "192Mi"
+            cpu: "800m"
         #envFrom:
         #- configMapRef:
         #    name: zcp-demo

@@ -3,6 +3,7 @@ package zcp.demo.alert.api;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -14,12 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoadController {
     private static String response = "Start";
 
+    private ArrayList<byte[]> cache = new ArrayList<>();
+
     @GetMapping("/load/mem")
     public String memory(@RequestParam(name = "l", defaultValue = "1") int loop) {
-        try {
-            read();
-        } catch (IOException e) {
-            e.printStackTrace();
+        for(int i=0; i < loop; i++){
+            try {
+                cache.add(read());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return response + " (" + loop + ")";
     }
@@ -29,7 +34,7 @@ public class LoadController {
         return response + "!!!";
     }
 
-    private void read() throws IOException {
+    private byte[] read() throws IOException {
         Resource data = new ClassPathResource("static/mock.csv");
 
         // byte[] buf = Files.readAllBytes(data.getFile().toPath());
@@ -45,5 +50,7 @@ public class LoadController {
 
         buf = buffer.toByteArray();
         System.out.format("Read %s bytes.", buf.length);
+
+        return buf;
     }
 }
