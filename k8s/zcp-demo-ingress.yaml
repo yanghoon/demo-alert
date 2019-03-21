@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: zcp-demo
+  namespace: zcp-demo
+spec:
+  #tls:
+  #- hosts:
+  #  - zcp-demo.cloudzcp.io
+  #  secretName: cloudzcp-io-cert
+  rules:
+  - host: zcp-demo.cloudzcp.io
+    http:
+      paths:
+      - backend:
+          serviceName: zcp-demo
+          servicePort: 80
+

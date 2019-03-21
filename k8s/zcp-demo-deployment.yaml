@@ -1,0 +1,45 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: zcp-demo
+  namespace: zcp-demo
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: zcp-demo
+        module: alert
+      annotations: # https://www.weave.works/docs/cloud/latest/tasks/monitor/configuration-k8s/
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+      - name: zcp-demo
+        image: pog-dev-registry.cloudzcp.io/zcp-demo/zcp-demo:latest
+        imagePullPolicy: Always
+        ports:
+        - name: spring
+          containerPort: 8080
+        #envFrom:
+        #- configMapRef:
+        #    name: zcp-demo
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: zcp-demo
+  labels:
+    name: zcp-demo
+  namespace: zcp-demo
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    component: zcp-demo
