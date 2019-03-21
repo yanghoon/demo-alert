@@ -4,7 +4,7 @@ metadata:
   name: zcp-demo
   namespace: zcp-demo
 spec:
-  replicas: 1
+  replicas: 0
   template:
     metadata:
       labels:
@@ -20,16 +20,19 @@ spec:
       - name: zcp-demo
         image: pog-dev-registry.cloudzcp.io/zcp-demo/alert:latest
         imagePullPolicy: Always
+        env:
+        - name: JAVA_OPTS
+          value: '-Xmx12g'
         ports:
         - name: spring
           containerPort: 8080
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "200m"
-          limits:
-            memory: "192Mi"
-            cpu: "800m"
+        #resources:
+        #  requests:
+        #    memory: "128Mi"
+        #    cpu: "200m"
+        #  limits:
+        #    memory: "192Mi"
+        #    cpu: "800m"
         #envFrom:
         #- configMapRef:
         #    name: zcp-demo
