@@ -1,8 +1,6 @@
 package zcp.demo.alert.api;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -10,6 +8,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,7 +33,7 @@ public class LoadController {
     @PostConstruct
     public void init() throws IOException {
         DATA = new ClassPathResource("static/mock.csv");
-        DATA_SIZE = DATA.getFile().length();
+        DATA_SIZE = DATA.getInputStream().available();
         DATA_SIZE_MIB = toBiFloat(DATA_SIZE);
 
         MSG_TOO_SMALL = String.format("Too small. (min: %s)", toBi(DATA_SIZE));
@@ -121,16 +120,17 @@ public class LoadController {
     }
 
     private byte[] read() throws IOException {
-        InputStream is = DATA.getInputStream();
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        return IOUtils.toByteArray(DATA.getInputStream());
+        // InputStream is = DATA.getInputStream();
+        // ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        int len;
-        byte[] buf = new byte[100 * 1024];
-        // byte[] ret = new byte[(int) DATA_SIZE];
-        while ((len = is.read(buf, 0, buf.length)) != -1) {
-            buffer.write(buf, 0, len);
-        }
+        // int len;
+        // byte[] buf = new byte[100 * 1024];
+        // // byte[] ret = new byte[(int) DATA_SIZE];
+        // while ((len = is.read(buf, 0, buf.length)) != -1) {
+        //     buffer.write(buf, 0, len);
+        // }
 
-        return buffer.toByteArray();
+        // return buffer.toByteArray();
     }
 }
