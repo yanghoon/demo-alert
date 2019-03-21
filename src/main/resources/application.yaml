@@ -1,0 +1,8 @@
+
+# Reference
+# - https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-endpoints.html#production-ready-endpoints-exposing-endpoints
+# - https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+
+management.endpoints.web.exposure.include: '*'
+
+#logging.level.org.springframework: DEBUG
