@@ -9,7 +9,6 @@ plugins {
   id 'java'
 }
 
-
 group = 'zcp.demo'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
@@ -25,4 +24,14 @@ dependencies {
 
   implementation 'io.micrometer:micrometer-core'
   implementation 'io.micrometer:micrometer-registry-prometheus'
+
+  implementation 'io.springfox:springfox-swagger2:2.9.2'
+  implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+
+  implementation 'org.apache.commons:commons-io:1.3.2'
+}
+
+task finalize (type: Copy) {
+    from 'build/libs/'
+    into 'docker/dist/'
 }

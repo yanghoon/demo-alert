@@ -4,7 +4,7 @@ metadata:
   name: zcp-demo
   namespace: zcp-demo
 spec:
-  replicas: 0
+  replicas: 1
   template:
     metadata:
       labels:
@@ -16,13 +16,15 @@ spec:
         prometheus.io/port: '8080'
         prometheus.io/scrape: 'true'
     spec:
+      #nodeSelector:
+      #  kubernetes.io/hostname: 10.178.218.164
       containers:
       - name: zcp-demo
         image: pog-dev-registry.cloudzcp.io/zcp-demo/alert:latest
         imagePullPolicy: Always
         env:
         - name: JAVA_OPTS
-          value: '-Xmx12g'
+          value: '-Xmx13g'
         ports:
         - name: spring
           containerPort: 8080

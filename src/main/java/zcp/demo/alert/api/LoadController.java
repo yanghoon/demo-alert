@@ -2,6 +2,7 @@ package zcp.demo.alert.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,17 +121,14 @@ public class LoadController {
     }
 
     private byte[] read() throws IOException {
-        return IOUtils.toByteArray(DATA.getInputStream());
-        // InputStream is = DATA.getInputStream();
-        // ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] data = null;
+        if(cache.isEmpty()){
+            data = IOUtils.toByteArray(DATA.getInputStream());
+        } else {
+            data = cache.get(0);
+            data = Arrays.copyOf(data, data.length);
+        }
 
-        // int len;
-        // byte[] buf = new byte[100 * 1024];
-        // // byte[] ret = new byte[(int) DATA_SIZE];
-        // while ((len = is.read(buf, 0, buf.length)) != -1) {
-        //     buffer.write(buf, 0, len);
-        // }
-
-        // return buffer.toByteArray();
+        return data;
     }
 }
