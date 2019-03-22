@@ -3,26 +3,31 @@ stage:
 - Deploy
 
 Build:
-- maven:
-  - mvn clean install -Dmaven.repo.local=/root/.m2/${JOB_NAME}
+- gradle:
+  - ./gradlew bootJar
 - docker:
   - cd docker && docker build . -t $image
-  - docker images | grep cloudzcp
+  - docker images | grep zcp-demo
 - docker.push:
     imageName: $image
-    credentialsId: dockerhub
+    credentialsId: HARBOR_CREDENTIALS
 
 Deploy:
 - kubectl:
   - kubectl apply -R -f $yaml
-  - kubectl scale deploy zcp-portal-ui --replicas 1 -n $namespace
+  - kubectl scale deploy zcp-demo --replicas 1 -n $namespace
 
 env:
   image: pog-dev-registry.cloudzcp.io/zcp-demo/alert:latest
   yaml: k8s
 
 agent:
-  profile: [maven, docker, kubectl]
-  volumes:
-  - pvc:zcp-jenkins-mvn-repo: /root/.m2
+  profile: [docker, kubectl]
+  containers:
+  - name: gradle
+    image: openjdk:8-alpine
+    ttyEnabled: true
+    command: cat
+  #volumes:
+  #- pvc:zcp-jenkins-mvn-repo: /root/.m2
   serviceAccount: zcp-system-admin
