@@ -4,8 +4,9 @@ stage:
 
 Build:
 - gradle:
-  - ./gradlew bootJar
+  - ./gradlew -g /cache/gradle/zcp-demo bootJar
 - docker:
+  - pwd
   - cd docker && docker build . -t $image
   - docker images | grep zcp-demo
 - docker.push:
@@ -25,9 +26,9 @@ agent:
   profile: [docker, kubectl]
   containers:
   - name: gradle
-    image: openjdk:8-alpine
+    image: gradle:5.3.0-jre-alpine
     ttyEnabled: true
-    command: cat
-  #volumes:
-  #- pvc:zcp-jenkins-mvn-repo: /root/.m2
+    # command: cat
+  volumes:
+  - pvc:zcp-jenkins-mvn-repo: /cache
   serviceAccount: zcp-system-admin
